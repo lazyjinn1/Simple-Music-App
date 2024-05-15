@@ -1,31 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import Sound from 'react-native-sound';
 
-const App = () => {
-  const songs = [
-    { uri: require('./Yellow.mp3'), name: 'Yellow' },
-    { uri: require('./ScissorSeven.mp3'), name: 'Scissor Seven' },
-    { uri: require('./ForestFly.mp3'), name: 'Forest Fly' },
-    { uri: require('./KillTheLights.mp3'), name: 'Kill The Lights' },
-    { uri: require('./Shawty.mp3'), name: 'Shawty' },
-  ];
+const songs = [
+  {uri: require('./assets/songs/Yellow.mp3'), name: 'Yellow'},
+  {uri: require('./assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven'},
+  {uri: require('./assets/songs/ForestFly.mp3'), name: 'Forest Fly'},
+  {uri: require('./assets/songs/KillTheLights.mp3'), name: 'Kill The Lights'},
+  {uri: require('./assets/songs/Shawty.mp3'), name: 'Shawty'},
+]; // placed outside the application so that it is accessible from anywhere. Its static so it shouldn't matter. -J.C.
 
+const App = () => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const sound = useRef(null);
+  const sound = useRef<Sound | null>(null); // making sure that the application that sound is of class Sound -J.C.
+
+  Sound.setCategory('Playback'); //sets the category for the type of sound - J.C.
 
   useEffect(() => {
     if (sound.current !== null) {
       sound.current.release();
     }
 
-    sound.current = new Sound(songs[currentSongIndex].uri, '', (error) => {
-      if (error) {
-        console.log('Error loading sound: ', error);
-      }
-    });
+    // removed parentheses around "error" and added Sound.MAIN_BUNDLE - J.C.
+    sound.current = new Sound(
+      songs[currentSongIndex].uri,
+      Sound.MAIN_BUNDLE,
+      error => {
+        if (error) {
+          console.log('Error loading sound: ', error);
+        }
+      },
+    );
 
     return () => {
       if (sound.current !== null) {
@@ -40,7 +47,8 @@ const App = () => {
       if (isPlaying) {
         sound.current.pause();
       } else {
-        sound.current.play((success) => {
+        // removed the parentheses around success - J.C.
+        sound.current.play(success => {
           if (success) {
             console.log('Playback successful');
           } else {
