@@ -14,7 +14,7 @@ const App = () => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const sound = useRef<Sound | null>(null); // making sure that the application that sound is of class Sound -J.C.
+  const sound = useRef<Sound | null>(null); // making sure that the application knows that sound is of class Sound -J.C.
 
   Sound.setCategory('Playback'); //sets the category for the type of sound - J.C.
 
@@ -63,6 +63,7 @@ const App = () => {
   const nextSong = () => {
     if (currentSongIndex === songs.length - 1) {
       setCurrentSongIndex(0); // Loop back to the first song
+      setIsPlaying(false);
     } else {
       setCurrentSongIndex(currentSongIndex + 1);
       setIsPlaying(false); // Set play button to "Play" when switching to next song
@@ -71,7 +72,8 @@ const App = () => {
 
   const prevSong = () => {
     if (currentSongIndex === 0) {
-      setCurrentSongIndex(songs.length - 1); // Go to the last song
+      setCurrentSongIndex(songs.length - 1); // Loop back to the last song
+      setIsPlaying(false);
     } else {
       setCurrentSongIndex(currentSongIndex - 1);
       setIsPlaying(false); // Set play button to "Play" when switching to previous song
