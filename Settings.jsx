@@ -10,11 +10,11 @@ const songs = [
   {uri: require('./assets/songs/Shawty.mp3'), name: 'Shawty'},
 ]; // placed outside the application so that it is accessible from anywhere. Its static so it shouldn't matter. -J.C.
 
-const App = () => {
+const SettingsView = () => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const sound = useRef<Sound | null>(null); // making sure that the application knows that sound is of class Sound -J.C.
+  const sound = useRef(null); // making sure that the application knows that sound is of class Sound -J.C.
 
   Sound.setCategory('Playback'); //sets the category for the type of sound - J.C.
 
@@ -140,4 +140,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default SettingsView;
