@@ -1,16 +1,18 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import React, { useState, useEffect, useRef, createContext } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Sound from 'react-native-sound';
 
 const songs = [
-  {uri: require('./assets/songs/Yellow.mp3'), name: 'Yellow'},
-  {uri: require('./assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven'},
-  {uri: require('./assets/songs/ForestFly.mp3'), name: 'Forest Fly'},
-  {uri: require('./assets/songs/KillTheLights.mp3'), name: 'Kill The Lights'},
-  {uri: require('./assets/songs/Shawty.mp3'), name: 'Shawty'},
+  { uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow' },
+  { uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven' },
+  { uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly' },
+  { uri: require('../assets/songs/KillTheLights.mp3'), name: 'Kill The Lights' },
+  { uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty' },
 ]; // placed outside the application so that it is accessible from anywhere. Its static so it shouldn't matter. -J.C.
 
-const SettingsView = () => {
+const MusicContext = createContext();
+
+const SettingsView = ({ navigation }) => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -36,6 +38,7 @@ const SettingsView = () => {
 
     return () => {
       if (sound.current !== null) {
+        sound.current.pause();
         sound.current.release();
         sound.current = null;
       }
@@ -63,25 +66,23 @@ const SettingsView = () => {
   const nextSong = () => {
     if (currentSongIndex === songs.length - 1) {
       setCurrentSongIndex(0); // Loop back to the first song
-      setIsPlaying(false);
     } else {
       setCurrentSongIndex(currentSongIndex + 1);
-      setIsPlaying(false); // Set play button to "Play" when switching to next song
     }
   };
 
   const prevSong = () => {
     if (currentSongIndex === 0) {
       setCurrentSongIndex(songs.length - 1); // Loop back to the last song
-      setIsPlaying(false);
     } else {
       setCurrentSongIndex(currentSongIndex - 1);
-      setIsPlaying(false); // Set play button to "Play" when switching to previous song
     }
   };
 
+
   return (
     <View style={styles.container}>
+      <Text stye={styles.title}>Settings:</Text>
       <Text style={styles.songText}>{songs[currentSongIndex].name}</Text>
       <Text style={styles.artistText}>Artist: Dragon</Text>
       <View style={styles.controls}>
@@ -95,9 +96,27 @@ const SettingsView = () => {
           <Text style={styles.controlText}>Next</Text>
         </TouchableOpacity>
       </View>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('GameScreen')}>
+        <Text>Back to the game</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('MainMenuScreen')}>
+        <Text>Main Menu</Text>
+      </TouchableOpacity>
     </View>
   );
 };
+
+const MusicProvider = ({ children }) => {
+  const [selectedMusic, setSelectedMusic] = useState(null);
+  return (
+    <MusicContext.Provider value={{ selectedMusic, setSelectedMusic }}>
+      {children}
+    </MusicContext.Provider>
+  );
+};
+
+const useMusic = () => useContext(MusicContext);
 
 const styles = StyleSheet.create({
   container: {
@@ -105,6 +124,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
   },
   songText: {
     fontSize: 24,
@@ -138,6 +161,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  backButton: {
+    backgroundColor: '#FFD700',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
+    alignItems: 'center',
+  }
 });
 
 export default SettingsView;
+export { MusicProvider, useMusic };
