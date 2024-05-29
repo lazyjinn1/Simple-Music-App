@@ -1,27 +1,35 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
-import { GameContext } from '../App'
-import { MusicProvider } from './Settings';
+import React, {useState, useContext, useEffect} from 'react';
+import {StyleSheet, Text, View, TouchableOpacity, Alert} from 'react-native';
+import {GameContext} from '../App';
+import {MusicProvider} from './Settings';
 
-const GameView = ({ navigation }) => {
-  const { gold, setGold, clickMultiplier, setClickMultiplier, goldMultiplier, setGoldMultiplier, start, setStart } = useContext(GameContext);
+const GameView = ({navigation}) => {
+  const {
+    gold,
+    setGold,
+    clickMultiplier,
+    setClickMultiplier,
+    goldMultiplier,
+    setGoldMultiplier,
+    start,
+    setStart,
+  } = useContext(GameContext);
   const [score, setScore] = useState(0);
   const [damageDone, setDamageDone] = useState(0);
   const [level, setLevel] = useState(1);
   const [enemyHealth, setEnemyHealth] = useState(50);
-  const [timer, setTimer] = useState(60)
-
+  const [timer, setTimer] = useState(60);
 
   useEffect(() => {
     let timerInterval;
     if (start) {
-      const timerInterval = setInterval(() => {
+      timerInterval = setInterval(() => {
         setTimer(prevTimer => {
           if (prevTimer > 0) {
             return prevTimer - 1;
           } else {
             clearInterval(timerInterval);
-            handleLevelCompletion();
+            navigation.navigate('GameOver', {score, level});
             return prevTimer;
           }
         });
@@ -29,29 +37,28 @@ const GameView = ({ navigation }) => {
     }
 
     return () => clearInterval(timerInterval);
-  }, [start]);
-
+  }, [navigation, score, start, level]);
 
   const incrementClicks = () => {
     setStart(true);
     setScore(score + 1 * clickMultiplier);
     setGold(gold + 1 * goldMultiplier);
-    setDamageDone(1 * clickMultiplier)
+    setDamageDone(1 * clickMultiplier);
     setEnemyHealth(enemyHealth - damageDone);
     if (damageDone >= enemyHealth) {
       levelUp(level, gold);
     }
   };
 
-  const levelUp = (level, gold) => {
+  const levelUp = () => {
     setLevel(level + 1);
     const levelUpMessage = `Congratulations! Level: ${level + 1}`;
-    Alert.alert(levelUpMessage)
+    Alert.alert(levelUpMessage);
     setGold(gold + goldMultiplier * level * 15);
     setDamageDone(0);
-    setEnemyHealth(50 * level * 1.1)
+    setEnemyHealth(50 * level * 1.1);
     setTimer(60);
-  }
+  };
 
   const openShop = () => {
     navigation.navigate('ShopScreen', {
@@ -60,10 +67,6 @@ const GameView = ({ navigation }) => {
       clickMultiplier,
       setClickMultiplier,
     });
-  };
-
-  const handleGameOver = () => {
-    navigation.navigate('GameOver', { score });
   };
 
   const resetGame = () => {
@@ -84,12 +87,18 @@ const GameView = ({ navigation }) => {
         <Text style={styles.timer}>Time Left: {timer} seconds</Text>
         <View style={styles.mainInfo}>
           <Text style={styles.score}>Score: {score}</Text>
-          <Text style={styles.score}>Enemy Health: {enemyHealth.toFixed(1)}</Text>
+          <Text style={styles.score}>
+            Enemy Health: {enemyHealth.toFixed(1)}
+          </Text>
         </View>
         <View style={styles.sideInfo}>
           <Text style={styles.score}>Gold: ${gold.toFixed(2)}</Text>
-          <Text style={styles.score}>Click Multiplier: {clickMultiplier.toFixed(1)}x</Text>
-          <Text style={styles.score}>Gold Multiplier: {goldMultiplier.toFixed(1)}x</Text>
+          <Text style={styles.score}>
+            Click Multiplier: {clickMultiplier.toFixed(1)}x
+          </Text>
+          <Text style={styles.score}>
+            Gold Multiplier: {goldMultiplier.toFixed(1)}x
+          </Text>
         </View>
         <TouchableOpacity style={styles.mainButton} onPress={incrementClicks}>
           <Text style={styles.mainButtonText}>Click me!</Text>
@@ -100,13 +109,16 @@ const GameView = ({ navigation }) => {
         <TouchableOpacity style={styles.button} onPress={resetGame}>
           <Text style={styles.buttonText}>Reset</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SettingsScreen')}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('SettingsScreen')}>
           <Text style={styles.buttonText}>Settings</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MainMenuScreen')}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('MainMenuScreen')}>
           <Text style={styles.buttonText}>Main Menu</Text>
         </TouchableOpacity>
-
       </View>
     </MusicProvider>
   );
@@ -134,7 +146,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     marginBottom: 20,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   score: {
     fontSize: 15,
@@ -163,8 +175,8 @@ const styles = StyleSheet.create({
 
   mainButtonText: {
     fontSize: 50,
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold',
+  },
 });
 
 export default GameView;

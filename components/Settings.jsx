@@ -1,18 +1,24 @@
-import React, { useState, useEffect, useRef, createContext } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import Sound from 'react-native-sound';
 
 const songs = [
-  { uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow' },
-  { uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven' },
-  { uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly' },
-  { uri: require('../assets/songs/KillTheLights.mp3'), name: 'Kill The Lights' },
-  { uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty' },
+  {uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow'},
+  {uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven'},
+  {uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly'},
+  {uri: require('../assets/songs/KillTheLights.mp3'), name: 'Kill The Lights'},
+  {uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty'},
 ]; // placed outside the application so that it is accessible from anywhere. Its static so it shouldn't matter. -J.C.
 
 const MusicContext = createContext();
 
-const SettingsView = ({ navigation }) => {
+const SettingsView = ({navigation}) => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -79,7 +85,6 @@ const SettingsView = ({ navigation }) => {
     }
   };
 
-
   return (
     <View style={styles.container}>
       <Text stye={styles.title}>Settings:</Text>
@@ -96,21 +101,25 @@ const SettingsView = ({ navigation }) => {
           <Text style={styles.controlText}>Next</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('GameScreen')}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.navigate('GameScreen')}>
         <Text>Back to the game</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('MainMenuScreen')}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.navigate('MainMenuScreen')}>
         <Text>Main Menu</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-const MusicProvider = ({ children }) => {
+const MusicProvider = ({children}) => {
   const [selectedMusic, setSelectedMusic] = useState(null);
   return (
-    <MusicContext.Provider value={{ selectedMusic, setSelectedMusic }}>
+    <MusicContext.Provider value={{selectedMusic, setSelectedMusic}}>
       {children}
     </MusicContext.Provider>
   );
@@ -167,8 +176,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginVertical: 5,
     alignItems: 'center',
-  }
+  },
 });
 
 export default SettingsView;
-export { MusicProvider, useMusic };
+export {MusicProvider, useMusic};

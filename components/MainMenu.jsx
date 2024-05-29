@@ -1,17 +1,26 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { MusicProvider } from './Settings';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {MusicProvider} from './Settings';
 
-const MainMenuView = ({ navigation }) => {
+const MainMenuView = ({navigation}) => {
   return (
     <MusicProvider>
       <View style={styles.container}>
         <Text style={styles.title}>Welcome to the Clicker Game!</Text>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('GameScreen')}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('GameScreen')}>
           <Text style={styles.textButton}>Start Game</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SettingsScreen')}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('SettingsScreen')}>
           <Text style={styles.textButton}>Settings</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('LeaderboardScreen')}>
+          <Text style={styles.textButton}>Leaderboards</Text>
         </TouchableOpacity>
       </View>
     </MusicProvider>
