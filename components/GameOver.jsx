@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -12,35 +13,47 @@ const GameOverView = ({route, navigation}) => {
   const {score} = route.params;
   const {level} = route.params;
   const [highScoreName, setHighScoreName] = useState('');
-  const [highScore, setHighScore] = useState(0);
+  const [highScores, setHighScores] = useState([]);
 
-  const handleSubmitScore = () => {
-    Alert.alert(`Score of ${score} submitted!`);
+  useEffect(() => {
+    const loadHighScores = async () => {
+      try {
+        const storedScores = await AsyncStorage.getItem('highScores');
+        if (storedScores) {
+          setHighScores(JSON.parse(storedScores));
+        } else {
+          setHighScores([]);
+        }
+      } catch (error) {
+        Alert.alert('Failed to load high scores');
+      }
+    };
+    loadHighScores();
+  }, []);
 
-    if (score > highScore) {
-      setHighScore(score);
-      Alert.alert(
-        'High Score alert!!',
-        'Would you like to view the leaderboard?',
-        [
-          {
-            text: 'Yes',
-            onPress: () =>
-              navigation.navigate('LeaderboardScreen', {
-                highScore,
-                highScoreName,
-              }),
-            style: 'cancel',
-          },
-          {
-            text: 'No',
-            onPress: () => navigation.navigate('MainMenuScreen'),
-            style: 'cancel',
-          },
-        ],
+  const saveHighScore = async () => {
+    if (!highScoreName) {
+      Alert.alert('Please enter your name');
+    } else {
+      const newEntry = {name: highScoreName.trim(), score: score, level: level};
+      const updatedHighScores = [...highScores, newEntry].sort(
+        (a, b) => b.score - a.score,
       );
+      setHighScores(updatedHighScores);
+
+      try {
+        await AsyncStorage.setItem(
+          'highScores',
+          JSON.stringify(updatedHighScores),
+        );
+        Alert.alert('High score saved!');
+        navigation.navigate('LeaderboardScreen');
+      } catch (error) {
+        Alert.alert('Failed to save high score');
+      }
     }
   };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Game Over</Text>
@@ -48,17 +61,22 @@ const GameOverView = ({route, navigation}) => {
       <Text style={styles.score}>Level Reached: {level}</Text>
       <TextInput
         editable
-        multiline
-        numberOfLines={4}
-        maxLength={40}
+        numberOfLines={1}
+        maxLength={12}
+        placeholder="Write your name here:"
+        style={styles.inputBox}
         onChangeText={name => setHighScoreName(name)}
         value={highScoreName}
       />
-      <TouchableOpacity title="Submit Score" onPress={handleSubmitScore} />
+      <TouchableOpacity style={styles.button} onPress={saveHighScore}>
+        <Text style={styles.textButton}>Submit Score</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity
-        title="Back to Main Menu"
-        onPress={() => navigation.navigate('MainMenuView')}
-      />
+        style={styles.button}
+        onPress={() => navigation.navigate('MainMenuScreen')}>
+        <Text style={styles.textButton}>Main Menu</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -77,6 +95,25 @@ const styles = StyleSheet.create({
   score: {
     fontSize: 20,
     marginBottom: 20,
+  },
+  button: {
+    fontSize: 18,
+    alignItems: 'center',
+    backgroundColor: '#28a745',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+  },
+  inputBox: {
+    height: 40,
+    borderWidth: 2,
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 5,
   },
 });
 

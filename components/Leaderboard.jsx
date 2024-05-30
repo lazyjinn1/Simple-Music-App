@@ -9,9 +9,7 @@ import {
   FlatList,
 } from 'react-native';
 
-const LeaderboardView = ({route, navigation}) => {
-  const {highScore} = route.params;
-  const {highScoreName} = route.params;
+const LeaderboardView = ({navigation}) => {
   const [highScores, setHighScores] = useState([]);
 
   useEffect(() => {
@@ -31,40 +29,17 @@ const LeaderboardView = ({route, navigation}) => {
     loadHighScores();
   }, []);
 
-  useEffect(() => {
-    if (highScore && highScoreName) {
-      const newEntry = {name: highScoreName, score: highScore};
-      const updatedHighScores = [...highScores, newEntry].sort(
-        (a, b) => b.score - a.score,
-      );
-      setHighScores(updatedHighScores);
-
-      const saveHighScores = async () => {
-        try {
-          await AsyncStorage.setItem(
-            'highScores',
-            JSON.stringify(updatedHighScores),
-          );
-        } catch (error) {
-          console.log('Failed to save high scores', error);
-        }
-      };
-      saveHighScores();
-    }
-  }, [highScore, highScoreName, highScores]);
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Game Over</Text>
-      <Text style={styles.score}>Your Score: {highScore}</Text>
-      <Text style={styles.title}>Leaderboard</Text>
+      <Text style={styles.title}>Leaderboards</Text>
       <FlatList
         data={highScores}
-        keyExtractor={index => index.toString()}
+        keyExtractor={item => item.index}
         renderItem={({item}) => (
           <View style={styles.scoreEntry}>
-            <Text style={styles.scoreText}>{item.name}</Text>
-            <Text style={styles.scoreText}>{item.score}</Text>
+            <Text style={styles.scoreName}>{item.name}</Text>
+            <Text style={styles.scoreScore}>{item.score} Points</Text>
+            <Text style={styles.scoreLevel}>Level {item.level}</Text>
           </View>
         )}
       />
@@ -90,21 +65,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF',
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 50,
+    color: 'gold',
+    marginBottom: 10,
   },
   score: {
-    fontSize: 20,
+    fontSize: 25,
     marginBottom: 20,
   },
   scoreEntry: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderWidth: 3,
+    borderColor: 'black',
+    gap: 50,
+    backgroundColor: 'teal',
   },
-  scoreText: {
+  scoreName: {
+    color: 'black',
+    fontSize: 18,
+    fontWeight: 'bold',
+    justifyContent: 'flex-start',
+    textAlign: 'left',
+  },
+  scoreScore: {
+    color: 'black',
+    fontSize: 18,
+    justifyContent: 'center',
+  },
+  scoreLevel: {
+    color: 'black',
+    fontSize: 18,
+    justifyContent: 'flex-end',
+  },
+  button: {
+    fontSize: 18,
+    alignItems: 'center',
+    backgroundColor: '#28a745',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  buttonText: {
+    color: 'white',
     fontSize: 18,
   },
 });

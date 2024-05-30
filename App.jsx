@@ -18,6 +18,11 @@ const App = () => {
   const [clickMultiplier, setClickMultiplier] = useState(1);
   const [goldMultiplier, setGoldMultiplier] = useState(1);
   const [start, setStart] = useState(false);
+  const [score, setScore] = useState(0);
+  const [damageDone, setDamageDone] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [enemyHealth, setEnemyHealth] = useState(50);
+  const [timer, setTimer] = useState(10);
   return (
     <MusicProvider>
       <GameContext.Provider
@@ -30,6 +35,16 @@ const App = () => {
           setGoldMultiplier,
           start,
           setStart,
+          score,
+          setScore,
+          damageDone,
+          setDamageDone,
+          level,
+          setLevel,
+          enemyHealth,
+          setEnemyHealth,
+          timer,
+          setTimer,
         }}>
         <NavigationContainer>
           <Stack.Navigator initialRouteName="MainMenuScreen">

@@ -10,17 +10,12 @@ const MainMenuView = ({navigation}) => {
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('GameScreen')}>
-          <Text style={styles.textButton}>Start Game</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('SettingsScreen')}>
-          <Text style={styles.textButton}>Settings</Text>
+          <Text style={styles.buttonText}>Start Game</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('LeaderboardScreen')}>
-          <Text style={styles.textButton}>Leaderboards</Text>
+          <Text style={styles.buttonText}>Leaderboards</Text>
         </TouchableOpacity>
       </View>
     </MusicProvider>
@@ -49,7 +44,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
 
-  textButton: {
+  buttonText: {
     color: 'white',
     fontSize: 18,
   },

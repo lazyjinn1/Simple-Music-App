@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {StyleSheet, Text, View, TouchableOpacity, Alert} from 'react-native';
 import {GameContext} from '../App';
 import {MusicProvider} from './Settings';
@@ -13,34 +13,42 @@ const GameView = ({navigation}) => {
     setGoldMultiplier,
     start,
     setStart,
+    score,
+    setScore,
+    damageDone,
+    setDamageDone,
+    level,
+    setLevel,
+    enemyHealth,
+    setEnemyHealth,
+    timer,
+    setTimer,
   } = useContext(GameContext);
-  const [score, setScore] = useState(0);
-  const [damageDone, setDamageDone] = useState(0);
-  const [level, setLevel] = useState(1);
-  const [enemyHealth, setEnemyHealth] = useState(50);
-  const [timer, setTimer] = useState(60);
+
+  const startGame = () => {
+    setStart(true);
+  };
 
   useEffect(() => {
     let timerInterval;
     if (start) {
       timerInterval = setInterval(() => {
-        setTimer(prevTimer => {
-          if (prevTimer > 0) {
-            return prevTimer - 1;
+        setTimer(Timer => {
+          if (Timer > 0) {
+            return Timer - 1;
           } else {
             clearInterval(timerInterval);
-            navigation.navigate('GameOver', {score, level});
-            return prevTimer;
+            Alert.alert('Game Over');
+            navigation.navigate('GameOverScreen', {score, level});
+            return Timer;
           }
         });
       }, 1000);
+      return () => clearInterval(timerInterval);
     }
-
-    return () => clearInterval(timerInterval);
-  }, [navigation, score, start, level]);
+  }, [navigation, score, start, level, setTimer]);
 
   const incrementClicks = () => {
-    setStart(true);
     setScore(score + 1 * clickMultiplier);
     setGold(gold + 1 * goldMultiplier);
     setDamageDone(1 * clickMultiplier);
@@ -57,7 +65,7 @@ const GameView = ({navigation}) => {
     setGold(gold + goldMultiplier * level * 15);
     setDamageDone(0);
     setEnemyHealth(50 * level * 1.1);
-    setTimer(60);
+    setTimer(10);
   };
 
   const openShop = () => {
@@ -76,7 +84,7 @@ const GameView = ({navigation}) => {
     setGoldMultiplier(1);
     setLevel(1);
     setEnemyHealth(50);
-    setTimer(60);
+    setTimer(10);
     setStart(false);
   };
 
@@ -100,25 +108,33 @@ const GameView = ({navigation}) => {
             Gold Multiplier: {goldMultiplier.toFixed(1)}x
           </Text>
         </View>
-        <TouchableOpacity style={styles.mainButton} onPress={incrementClicks}>
-          <Text style={styles.mainButtonText}>Click me!</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={openShop}>
-          <Text style={styles.buttonText}>Shop</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={resetGame}>
-          <Text style={styles.buttonText}>Reset</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('SettingsScreen')}>
-          <Text style={styles.buttonText}>Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('MainMenuScreen')}>
-          <Text style={styles.buttonText}>Main Menu</Text>
-        </TouchableOpacity>
+        {!start ? (
+          <TouchableOpacity style={styles.mainButton} onPress={startGame}>
+            <Text style={styles.mainButtonText}>Start</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.mainButton} onPress={incrementClicks}>
+            <Text style={styles.mainButtonText}>Click me!</Text>
+          </TouchableOpacity>
+        )}
+        <View style={styles.menuButtons}>
+          <TouchableOpacity style={styles.button} onPress={openShop}>
+            <Text style={styles.buttonText}>Shop</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={resetGame}>
+            <Text style={styles.buttonText}>Reset</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('SettingsScreen')}>
+            <Text style={styles.buttonText}>Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('MainMenuScreen')}>
+            <Text style={styles.buttonText}>Main Menu</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </MusicProvider>
   );
@@ -134,13 +150,19 @@ const styles = StyleSheet.create({
   },
 
   mainInfo: {
-    justifyContent: 'right',
-    alignItems: 'right',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   sideInfo: {
-    justifyContent: 'right',
-    alignItems: 'right',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  menuButtons: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
   },
 
   title: {
@@ -153,21 +175,21 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   button: {
-    backgroundColor: '#007bff',
+    fontSize: 18,
+    alignItems: 'center',
+    backgroundColor: '#28a745',
     padding: 10,
     borderRadius: 5,
     marginVertical: 5,
   },
-
   buttonText: {
     color: 'white',
+    fontSize: 18,
   },
-
   mainButton: {
     backgroundColor: 'red',
     padding: 35,
     borderRadius: 5,
-
     marginTop: 25,
     marginBottom: 25,
     color: '#000',
