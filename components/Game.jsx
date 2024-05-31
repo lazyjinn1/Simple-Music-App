@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState, useCallback} from 'react';
 import {
   StyleSheet,
   Text,
@@ -56,7 +56,6 @@ const GameView = ({navigation}) => {
             return Timer - 1;
           } else {
             clearInterval(timerInterval);
-            Alert.alert('Game Over');
             setGameOverVisible(true);
             return Timer;
           }
@@ -107,8 +106,7 @@ const GameView = ({navigation}) => {
     setGameOverVisible(false);
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setScore(0);
     setGold(0);
     setClickMultiplier(1);
@@ -117,7 +115,16 @@ const GameView = ({navigation}) => {
     setEnemyHealth(25);
     setTimer(10);
     setStart(false);
-  };
+  }, [
+    setClickMultiplier,
+    setEnemyHealth,
+    setGold,
+    setGoldMultiplier,
+    setLevel,
+    setScore,
+    setStart,
+    setTimer,
+  ]);
 
   return (
     <MusicProvider>

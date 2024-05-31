@@ -8,7 +8,7 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import {v4 as uuidv4} from 'uuid';
+import uuid from 'react-native-uuid';
 
 const GameOverView = ({navigation, level, score}) => {
   const [highScoreName, setHighScoreName] = useState('');
@@ -35,7 +35,7 @@ const GameOverView = ({navigation, level, score}) => {
       Alert.alert('Please enter your name');
     } else {
       const newEntry = {
-        id: uuidv4(),
+        id: uuid.v4(),
         name: highScoreName.trim(),
         score: score,
         level: level,
