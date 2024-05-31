@@ -18,19 +18,18 @@ const songs = [
 
 const MusicContext = createContext();
 
-const SettingsView = ({navigation}) => {
+const SettingsView = ({closeSettings, isPlaying, setIsPlaying}) => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-
   const sound = useRef(null); // making sure that the application knows that sound is of class Sound -J.C.
 
-  Sound.setCategory('Playback'); //sets the category for the type of sound - J.C.
+  //sets the category for the type of sound - J.C.
+  Sound.setCategory('Playback');
 
   useEffect(() => {
-    if (sound.current !== null) {
+    if (sound.current) {
+      sound.current.pause();
       sound.current.release();
     }
-
     // removed parentheses around "error" and added Sound.MAIN_BUNDLE - J.C.
     sound.current = new Sound(
       songs[currentSongIndex].uri,
@@ -38,56 +37,45 @@ const SettingsView = ({navigation}) => {
       error => {
         if (error) {
           console.log('Error loading sound: ', error);
+          return;
         }
+        sound.current.play();
       },
     );
-
-    return () => {
-      if (sound.current !== null) {
-        sound.current.pause();
-        sound.current.release();
-        sound.current = null;
-      }
-    };
   }, [currentSongIndex]);
 
   const playPause = () => {
-    if (sound.current !== null) {
-      if (isPlaying) {
-        sound.current.pause();
-      } else {
-        // removed the parentheses around success - J.C.
-        sound.current.play(success => {
-          if (success) {
-            console.log('Playback successful');
-          } else {
-            console.log('Playback failed');
-          }
-        });
-      }
-      setIsPlaying(!isPlaying);
+    if (sound.current && isPlaying) {
+      sound.current.pause();
+    } else {
+      sound.current.play();
     }
+    setIsPlaying(!isPlaying);
   };
 
   const nextSong = () => {
     if (currentSongIndex === songs.length - 1) {
+      sound.current.release;
       setCurrentSongIndex(0); // Loop back to the first song
     } else {
+      sound.current.release;
       setCurrentSongIndex(currentSongIndex + 1);
     }
   };
 
   const prevSong = () => {
     if (currentSongIndex === 0) {
+      sound.current.release;
       setCurrentSongIndex(songs.length - 1); // Loop back to the last song
     } else {
+      sound.current.release;
       setCurrentSongIndex(currentSongIndex - 1);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text stye={styles.title}>Settings:</Text>
+      <Text style={styles.title}>Settings:</Text>
       <Text style={styles.songText}>{songs[currentSongIndex].name}</Text>
       <Text style={styles.artistText}>Artist: Dragon</Text>
       <View style={styles.controls}>
@@ -101,16 +89,8 @@ const SettingsView = ({navigation}) => {
           <Text style={styles.controlText}>Next</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.navigate('GameScreen')}>
-        <Text>Back to the game</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.navigate('MainMenuScreen')}>
-        <Text>Main Menu</Text>
+      <TouchableOpacity style={styles.backButton} onPress={closeSettings}>
+        <Text style={styles.controlText}>Back</Text>
       </TouchableOpacity>
     </View>
   );
@@ -130,12 +110,13 @@ const useMusic = () => useContext(MusicContext);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
   title: {
-    fontSize: 24,
+    fontSize: 30,
     marginBottom: 20,
   },
   songText: {
@@ -144,7 +125,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   artistText: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 10,
     paddingBottom: 5,
   },
@@ -159,10 +141,10 @@ const styles = StyleSheet.create({
   controls: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: '80%',
+    gap: 10,
   },
   controlButton: {
-    padding: 10,
+    padding: 20,
     borderRadius: 5,
     backgroundColor: '#FFD700',
   },
@@ -172,10 +154,13 @@ const styles = StyleSheet.create({
   },
   backButton: {
     backgroundColor: '#FFD700',
-    padding: 10,
+    padding: 20,
     borderRadius: 5,
     marginVertical: 5,
     alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
   },
 });
 

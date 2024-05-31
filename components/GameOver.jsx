@@ -8,10 +8,9 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
+import {v4 as uuidv4} from 'uuid';
 
-const GameOverView = ({route, navigation}) => {
-  const {score} = route.params;
-  const {level} = route.params;
+const GameOverView = ({navigation, level, score}) => {
   const [highScoreName, setHighScoreName] = useState('');
   const [highScores, setHighScores] = useState([]);
 
@@ -35,7 +34,12 @@ const GameOverView = ({route, navigation}) => {
     if (!highScoreName) {
       Alert.alert('Please enter your name');
     } else {
-      const newEntry = {name: highScoreName.trim(), score: score, level: level};
+      const newEntry = {
+        id: uuidv4(),
+        name: highScoreName.trim(),
+        score: score,
+        level: level,
+      };
       const updatedHighScores = [...highScores, newEntry].sort(
         (a, b) => b.score - a.score,
       );

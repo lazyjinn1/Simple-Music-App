@@ -1,7 +1,12 @@
-import React, {useContext} from 'react';
-import {View, Text, FlatList, TouchableOpacity, Alert} from 'react-native';
-import {GameContext} from '../App';
-import {MusicProvider} from './Settings';
+import React from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+} from 'react-native';
 
 const UpgradeItem = ({upgrade, onPurchase}) => {
   const {name, cost, clickBonus, goldBonus} = upgrade;
@@ -12,27 +17,25 @@ const UpgradeItem = ({upgrade, onPurchase}) => {
 
   return (
     <TouchableOpacity style={styles.upgradeButton} onPress={handlePress}>
-      <Text style={styles.upgradeText}>
-        {name} - Cost: {cost} Gold
-      </Text>
-      <Text style={styles.upgradeText}>Click Bonus: {clickBonus}</Text>
-      <Text style={styles.upgradeText}>Gold Bonus: {goldBonus}</Text>
+      <Text style={styles.upgradeText}>{name}</Text>
+      <Text style={styles.upgradeText}>Cost: ${cost}</Text>
+      <Text style={styles.upgradeText}>Click Bonus: {clickBonus}x</Text>
+      <Text style={styles.upgradeText}>Gold Bonus: {goldBonus}x</Text>
     </TouchableOpacity>
   );
 };
 
-const ShopView = ({navigation}) => {
-  const {
-    gold,
-    setGold,
-    clickMultiplier,
-    setClickMultiplier,
-    goldMultiplier,
-    setGoldMultiplier,
-  } = useContext(GameContext);
-
+const ShopView = ({
+  gold,
+  setGold,
+  clickMultiplier,
+  setClickMultiplier,
+  goldMultiplier,
+  setGoldMultiplier,
+  closeShop,
+}) => {
   const upgrades = [
-    {id: '1', name: 'Upgrade 1', cost: 50, clickBonus: 1, goldBonus: 1},
+    {id: '1', name: 'Upgrade 1', cost: 25, clickBonus: 1, goldBonus: 1},
     {id: '2', name: 'Upgrade 2', cost: 100, clickBonus: 5, goldBonus: 3},
     {id: '3', name: 'Upgrade 3', cost: 250, clickBonus: 10, goldBonus: 5},
     {id: '4', name: 'Upgrade 4', cost: 500, clickBonus: 25, goldBonus: 10},
@@ -58,33 +61,29 @@ const ShopView = ({navigation}) => {
   };
 
   return (
-    <MusicProvider>
-      <View style={styles.container}>
-        <Text style={styles.title}>Shop</Text>
-        <FlatList
-          data={upgrades}
-          renderItem={({item}) => (
-            <UpgradeItem upgrade={item} onPurchase={purchaseUpgrade} />
-          )}
-          keyExtractor={item => item.id}
-        />
-        <Text style={styles.title}>Gold: {gold.toFixed(2)}</Text>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate('GameScreen')}>
-          <Text style={styles.backButtonText}>Back to the Game</Text>
-        </TouchableOpacity>
-      </View>
-    </MusicProvider>
+    <View style={styles.container}>
+      <Text style={styles.title}>Shop</Text>
+      <FlatList
+        data={upgrades}
+        renderItem={({item}) => (
+          <UpgradeItem upgrade={item} onPurchase={purchaseUpgrade} />
+        )}
+        keyExtractor={item => item.id}
+      />
+      <Text style={styles.title}>Gold: {gold.toFixed(2)}</Text>
+      <TouchableOpacity style={styles.backButton} onPress={closeShop}>
+        <Text style={styles.backButtonText}>Back to the Game</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 10,
+    padding: 25,
   },
   title: {
     fontSize: 24,
@@ -93,7 +92,7 @@ const styles = {
   },
   upgradeButton: {
     backgroundColor: '#28a745',
-    padding: 10,
+    padding: 20,
     borderRadius: 5,
     marginVertical: 5,
     alignItems: 'center',
@@ -113,6 +112,6 @@ const styles = {
     fontSize: 18,
     fontWeight: 'bold',
   },
-};
+});
 
 export default ShopView;

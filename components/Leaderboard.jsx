@@ -34,7 +34,7 @@ const LeaderboardView = ({navigation}) => {
       <Text style={styles.title}>Leaderboards</Text>
       <FlatList
         data={highScores}
-        keyExtractor={item => item.index}
+        keyExtractor={item => item.id.toString()}
         renderItem={({item}) => (
           <View style={styles.scoreEntry}>
             <Text style={styles.scoreName}>{item.name}</Text>
@@ -43,11 +43,6 @@ const LeaderboardView = ({navigation}) => {
           </View>
         )}
       />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('GameScreen')}>
-        <Text style={styles.buttonText}>Play Again</Text>
-      </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('MainMenuScreen')}>

@@ -1,9 +1,23 @@
-import React, {useContext, useEffect} from 'react';
-import {StyleSheet, Text, View, TouchableOpacity, Alert} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+  Modal,
+} from 'react-native';
 import {GameContext} from '../App';
+import ShopView from './Shop';
+import SettingsView from './Settings';
 import {MusicProvider} from './Settings';
+import GameOverView from './GameOver';
 
 const GameView = ({navigation}) => {
+  const [shopVisible, setShopVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [gameOverVisible, setGameOverVisible] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const {
     gold,
     setGold,
@@ -25,6 +39,10 @@ const GameView = ({navigation}) => {
     setTimer,
   } = useContext(GameContext);
 
+  useEffect(() => {
+    resetGame();
+  }, [resetGame]);
+
   const startGame = () => {
     setStart(true);
   };
@@ -39,14 +57,14 @@ const GameView = ({navigation}) => {
           } else {
             clearInterval(timerInterval);
             Alert.alert('Game Over');
-            navigation.navigate('GameOverScreen', {score, level});
+            setGameOverVisible(true);
             return Timer;
           }
         });
       }, 1000);
-      return () => clearInterval(timerInterval);
     }
-  }, [navigation, score, start, level, setTimer]);
+    return () => clearInterval(timerInterval);
+  }, [navigation, start, setTimer]);
 
   const incrementClicks = () => {
     setScore(score + 1 * clickMultiplier);
@@ -64,26 +82,39 @@ const GameView = ({navigation}) => {
     Alert.alert(levelUpMessage);
     setGold(gold + goldMultiplier * level * 15);
     setDamageDone(0);
-    setEnemyHealth(50 * level * 1.1);
+    setEnemyHealth(25 * level * 1.1);
     setTimer(10);
+    setStart(false);
   };
 
   const openShop = () => {
-    navigation.navigate('ShopScreen', {
-      gold,
-      setGold,
-      clickMultiplier,
-      setClickMultiplier,
-    });
+    setShopVisible(true);
   };
 
+  const closeShop = () => {
+    setShopVisible(false);
+  };
+
+  const openSettings = () => {
+    setSettingsVisible(true);
+  };
+
+  const closeSettings = () => {
+    setSettingsVisible(false);
+  };
+
+  const closeGameOver = () => {
+    setGameOverVisible(false);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const resetGame = () => {
     setScore(0);
     setGold(0);
     setClickMultiplier(1);
     setGoldMultiplier(1);
     setLevel(1);
-    setEnemyHealth(50);
+    setEnemyHealth(25);
     setTimer(10);
     setStart(false);
   };
@@ -121,13 +152,11 @@ const GameView = ({navigation}) => {
           <TouchableOpacity style={styles.button} onPress={openShop}>
             <Text style={styles.buttonText}>Shop</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={openSettings}>
+            <Text style={styles.buttonText}>Settings</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={resetGame}>
             <Text style={styles.buttonText}>Reset</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('SettingsScreen')}>
-            <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
@@ -136,6 +165,49 @@ const GameView = ({navigation}) => {
           </TouchableOpacity>
         </View>
       </View>
+      <Modal
+        animationType="fade"
+        visible={shopVisible}
+        onRequestClose={closeShop}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <ShopView
+              gold={gold}
+              setGold={setGold}
+              clickMultiplier={clickMultiplier}
+              setClickMultiplier={setClickMultiplier}
+              goldMultiplier={goldMultiplier}
+              setGoldMultiplier={setGoldMultiplier}
+              closeShop={closeShop}
+            />
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="fade"
+        visible={settingsVisible}
+        onRequestClose={closeSettings}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <SettingsView
+              navigation={navigation}
+              closeSettings={closeSettings}
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+            />
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="fade"
+        visible={gameOverVisible}
+        onRequestClose={closeGameOver}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <GameOverView navigation={navigation} level={level} score={score} />
+          </View>
+        </View>
+      </Modal>
     </MusicProvider>
   );
 };
@@ -194,10 +266,21 @@ const styles = StyleSheet.create({
     marginBottom: 25,
     color: '#000',
   },
-
   mainButtonText: {
     fontSize: 50,
     fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
   },
 });
 

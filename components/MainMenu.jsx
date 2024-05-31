@@ -6,7 +6,7 @@ const MainMenuView = ({navigation}) => {
   return (
     <MusicProvider>
       <View style={styles.container}>
-        <Text style={styles.title}>Welcome to the Clicker Game!</Text>
+        <Text style={styles.title}>Welcome to Dragon Clicker</Text>
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('GameScreen')}>
@@ -31,8 +31,10 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 24,
+    fontSize: 50,
     marginBottom: 20,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 
   button: {
