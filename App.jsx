@@ -5,10 +5,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import MainMenuView from './components/MainMenu';
 import GameView from './components/Game';
 import ShopView from './components/Shop';
-import SettingsView from './components/Settings';
 import GameOverView from './components/GameOver';
 import LeaderboardView from './components/Leaderboard';
-import {MusicProvider} from './components/Settings';
 
 export const GameContext = createContext();
 
@@ -23,83 +21,82 @@ const App = () => {
   const [level, setLevel] = useState(1);
   const [enemyHealth, setEnemyHealth] = useState(50);
   const [timer, setTimer] = useState(10);
+  const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [shopVisible, setShopVisible] = useState(false);
   return (
-    <MusicProvider>
-      <GameContext.Provider
-        value={{
-          gold,
-          setGold,
-          clickMultiplier,
-          setClickMultiplier,
-          goldMultiplier,
-          setGoldMultiplier,
-          start,
-          setStart,
-          score,
-          setScore,
-          damageDone,
-          setDamageDone,
-          level,
-          setLevel,
-          enemyHealth,
-          setEnemyHealth,
-          timer,
-          setTimer,
-        }}>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="MainMenuScreen">
-            <Stack.Screen
-              name="MainMenuScreen"
-              component={MainMenuView}
-              options={{
-                headerBackVisible: false,
-                headerBackButtonMenuEnabled: false,
-              }}
-            />
-            <Stack.Screen
-              name="GameScreen"
-              component={GameView}
-              options={{
-                headerBackVisible: false,
-                headerBackButtonMenuEnabled: false,
-              }}
-            />
-            <Stack.Screen
-              name="ShopScreen"
-              component={ShopView}
-              options={{
-                headerBackVisible: false,
-                headerBackButtonMenuEnabled: false,
-              }}
-            />
-            <Stack.Screen
-              name="SettingsScreen"
-              component={SettingsView}
-              options={{
-                headerBackVisible: false,
-                headerBackButtonMenuEnabled: false,
-              }}
-            />
-            <Stack.Screen
-              name="GameOverScreen"
-              component={GameOverView}
-              options={{
-                headerBackVisible: false,
-                headerBackButtonMenuEnabled: false,
-              }}
-            />
-            <Stack.Screen
-              name="LeaderboardScreen"
-              component={LeaderboardView}
-              options={{
-                headerBackVisible: false,
-                headerBackButtonMenuEnabled: false,
-              }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </GameContext.Provider>
-    </MusicProvider>
+    <GameContext.Provider
+      value={{
+        gold,
+        setGold,
+        clickMultiplier,
+        setClickMultiplier,
+        goldMultiplier,
+        setGoldMultiplier,
+        start,
+        setStart,
+        score,
+        setScore,
+        damageDone,
+        setDamageDone,
+        level,
+        setLevel,
+        enemyHealth,
+        setEnemyHealth,
+        timer,
+        setTimer,
+        currentSongIndex,
+        setCurrentSongIndex,
+        isPlaying,
+        setIsPlaying,
+        shopVisible,
+        setShopVisible,
+      }}>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="MainMenuScreen">
+          <Stack.Screen
+            name="MainMenuScreen"
+            component={MainMenuView}
+            options={{
+              headerBackVisible: false,
+              headerBackButtonMenuEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="GameScreen"
+            component={GameView}
+            options={{
+              headerBackVisible: false,
+              headerBackButtonMenuEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="ShopScreen"
+            component={ShopView}
+            options={{
+              headerBackVisible: false,
+              headerBackButtonMenuEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="GameOverScreen"
+            component={GameOverView}
+            options={{
+              headerBackVisible: false,
+              headerBackButtonMenuEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="LeaderboardScreen"
+            component={LeaderboardView}
+            options={{
+              headerBackVisible: false,
+              headerBackButtonMenuEnabled: false,
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GameContext.Provider>
   );
 };
 export default App;

@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import uuid from 'react-native-uuid';
 
-const GameOverView = ({navigation, level, score}) => {
+const GameOverView = ({navigation, route}) => {
+  const {level, score} = route.params;
   const [highScoreName, setHighScoreName] = useState('');
   const [highScores, setHighScores] = useState([]);
 
@@ -78,7 +79,9 @@ const GameOverView = ({navigation, level, score}) => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('MainMenuScreen')}>
+        onPress={() => {
+          navigation.navigate('MainMenuScreen');
+        }}>
         <Text style={styles.textButton}>Main Menu</Text>
       </TouchableOpacity>
     </View>

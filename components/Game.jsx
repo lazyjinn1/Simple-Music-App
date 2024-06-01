@@ -1,4 +1,10 @@
-import React, {useContext, useEffect, useState, useCallback} from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,15 +15,24 @@ import {
 } from 'react-native';
 import {GameContext} from '../App';
 import ShopView from './Shop';
-import SettingsView from './Settings';
-import {MusicProvider} from './Settings';
-import GameOverView from './GameOver';
+import Sound from 'react-native-sound';
 
 const GameView = ({navigation}) => {
-  const [shopVisible, setShopVisible] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);
-  const [gameOverVisible, setGameOverVisible] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const songs = useMemo(
+    () => [
+      {uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow'},
+      {uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven'},
+      {uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly'},
+      {
+        uri: require('../assets/songs/KillTheLights.mp3'),
+        name: 'Kill The Lights',
+      },
+      {uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty'},
+    ],
+    [],
+  );
+
+  const sound = useRef(null);
   const {
     gold,
     setGold,
@@ -29,7 +44,6 @@ const GameView = ({navigation}) => {
     setStart,
     score,
     setScore,
-    damageDone,
     setDamageDone,
     level,
     setLevel,
@@ -37,74 +51,16 @@ const GameView = ({navigation}) => {
     setEnemyHealth,
     timer,
     setTimer,
+    currentSongIndex,
+    setCurrentSongIndex,
+    isPlaying,
+    setIsPlaying,
+    shopVisible,
+    setShopVisible,
+    setGameOverVisible,
   } = useContext(GameContext);
 
-  useEffect(() => {
-    resetGame();
-  }, [resetGame]);
-
-  const startGame = () => {
-    setStart(true);
-  };
-
-  useEffect(() => {
-    let timerInterval;
-    if (start) {
-      timerInterval = setInterval(() => {
-        setTimer(Timer => {
-          if (Timer > 0) {
-            return Timer - 1;
-          } else {
-            clearInterval(timerInterval);
-            setGameOverVisible(true);
-            return Timer;
-          }
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timerInterval);
-  }, [navigation, start, setTimer]);
-
-  const incrementClicks = () => {
-    setScore(score + 1 * clickMultiplier);
-    setGold(gold + 1 * goldMultiplier);
-    setDamageDone(1 * clickMultiplier);
-    setEnemyHealth(enemyHealth - damageDone);
-    if (damageDone >= enemyHealth) {
-      levelUp(level, gold);
-    }
-  };
-
-  const levelUp = () => {
-    setLevel(level + 1);
-    const levelUpMessage = `Congratulations! Level: ${level + 1}`;
-    Alert.alert(levelUpMessage);
-    setGold(gold + goldMultiplier * level * 15);
-    setDamageDone(0);
-    setEnemyHealth(25 * level * 1.1);
-    setTimer(10);
-    setStart(false);
-  };
-
-  const openShop = () => {
-    setShopVisible(true);
-  };
-
-  const closeShop = () => {
-    setShopVisible(false);
-  };
-
-  const openSettings = () => {
-    setSettingsVisible(true);
-  };
-
-  const closeSettings = () => {
-    setSettingsVisible(false);
-  };
-
-  const closeGameOver = () => {
-    setGameOverVisible(false);
-  };
+  Sound.setCategory('Playback');
 
   const resetGame = useCallback(() => {
     setScore(0);
@@ -115,29 +71,150 @@ const GameView = ({navigation}) => {
     setEnemyHealth(25);
     setTimer(10);
     setStart(false);
+    setCurrentSongIndex(0);
+    setIsPlaying(false);
   }, [
-    setClickMultiplier,
-    setEnemyHealth,
+    setScore,
     setGold,
+    setClickMultiplier,
     setGoldMultiplier,
     setLevel,
-    setScore,
-    setStart,
+    setEnemyHealth,
     setTimer,
+    setStart,
+    setCurrentSongIndex,
+    setIsPlaying,
   ]);
 
+  useEffect(() => {
+    resetGame();
+  }, [resetGame]);
+
+  useEffect(() => {
+    sound.current = new Sound(
+      songs[currentSongIndex].uri,
+      Sound.MAIN_BUNDLE,
+      error => {
+        if (error) {
+          console.log('Error loading sound: ', error);
+          return;
+        }
+        sound.current.play(success => {
+          if (success) {
+            console.log('successfully finished playing');
+          } else {
+            console.log('playback failed due to audio decoding errors');
+          }
+        });
+      },
+    );
+  }, [currentSongIndex, songs]);
+
+  const muteMusic = () => {
+    if (!sound.current || !isPlaying) {
+      Alert.alert('No song playing currently');
+    } else {
+      sound.current.setVolume(0);
+    }
+  };
+
+  const startGame = () => {
+    setStart(true);
+    if (level !== 1 && level % 5 === 1) {
+      const songIndex = Math.floor((level - 1) / 5);
+      setCurrentSongIndex(songIndex);
+      sound.current.play();
+      setIsPlaying(true);
+    } else if (level === 1) {
+      sound.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  useEffect(() => {
+    let timerInterval;
+    if (start) {
+      timerInterval = setInterval(() => {
+        setTimer(prevTimer => {
+          if (prevTimer > 0) {
+            return prevTimer - 1;
+          } else {
+            clearInterval(timerInterval);
+            // navigation.navigate('GameOverScreen', {navigation, level, score});
+            return prevTimer;
+          }
+        });
+      }, 1000);
+    }
+    return () => {
+      clearInterval(timerInterval);
+      sound.current.pause();
+      sound.current.release();
+    };
+  }, [
+    start,
+    setTimer,
+    setGameOverVisible,
+    setIsPlaying,
+    resetGame,
+    // navigation,
+  ]);
+
+  const incrementClicks = () => {
+    setScore(prevScore => prevScore + clickMultiplier);
+    setGold(prevGold => prevGold + goldMultiplier);
+    const damage = clickMultiplier;
+    setDamageDone(damage);
+    setEnemyHealth(prevHealth => {
+      const newHealth = prevHealth - damage;
+      if (damage >= prevHealth) {
+        levelUp();
+      }
+      return newHealth;
+    });
+  };
+
+  const levelUp = useCallback(() => {
+    setLevel(prevLevel => {
+      const newLevel = prevLevel + 1;
+      Alert.alert(`Congratulations! Level: ${newLevel}`);
+      setGold(prevGold => prevGold + goldMultiplier * newLevel * 15);
+      setDamageDone(0);
+      setEnemyHealth(25 * newLevel * 1.1);
+      setTimer(10);
+      setStart(false);
+      return newLevel;
+    });
+  }, [
+    setLevel,
+    goldMultiplier,
+    setGold,
+    setDamageDone,
+    setEnemyHealth,
+    setTimer,
+    setStart,
+  ]);
+
+  const openShop = () => {
+    setShopVisible(true);
+  };
+
+  const closeShop = () => {
+    setShopVisible(false);
+  };
+
   return (
-    <MusicProvider>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <View style={styles.mainContainer}>
         <Text style={styles.title}>Level: {level}</Text>
         <Text style={styles.timer}>Time Left: {timer} seconds</Text>
-        <View style={styles.mainInfo}>
+        <View style={styles.mainInfoContainer}>
           <Text style={styles.score}>Score: {score}</Text>
           <Text style={styles.score}>
             Enemy Health: {enemyHealth.toFixed(1)}
           </Text>
         </View>
-        <View style={styles.sideInfo}>
+        <View style={styles.sideInfoContainer}>
           <Text style={styles.score}>Gold: ${gold.toFixed(2)}</Text>
           <Text style={styles.score}>
             Click Multiplier: {clickMultiplier.toFixed(1)}x
@@ -159,9 +236,6 @@ const GameView = ({navigation}) => {
           <TouchableOpacity style={styles.button} onPress={openShop}>
             <Text style={styles.buttonText}>Shop</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={openSettings}>
-            <Text style={styles.buttonText}>Settings</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={resetGame}>
             <Text style={styles.buttonText}>Reset</Text>
           </TouchableOpacity>
@@ -170,6 +244,19 @@ const GameView = ({navigation}) => {
             onPress={() => navigation.navigate('MainMenuScreen')}>
             <Text style={styles.buttonText}>Main Menu</Text>
           </TouchableOpacity>
+        </View>
+        <View style={styles.musicContainer}>
+          <View style={styles.musicControls}>
+            <TouchableOpacity style={styles.controlButton} onPress={muteMusic}>
+              <Text style={styles.controlText}>Mute</Text>
+            </TouchableOpacity>
+            <View style={styles.musicInfo}>
+              <Text style={styles.musicText}>
+                {songs[currentSongIndex].name}
+              </Text>
+              <Text style={styles.artistText}>by Dragon</Text>
+            </View>
+          </View>
         </View>
       </View>
       <Modal
@@ -190,32 +277,7 @@ const GameView = ({navigation}) => {
           </View>
         </View>
       </Modal>
-      <Modal
-        animationType="fade"
-        visible={settingsVisible}
-        onRequestClose={closeSettings}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <SettingsView
-              navigation={navigation}
-              closeSettings={closeSettings}
-              isPlaying={isPlaying}
-              setIsPlaying={setIsPlaying}
-            />
-          </View>
-        </View>
-      </Modal>
-      <Modal
-        animationType="fade"
-        visible={gameOverVisible}
-        onRequestClose={closeGameOver}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <GameOverView navigation={navigation} level={level} score={score} />
-          </View>
-        </View>
-      </Modal>
-    </MusicProvider>
+    </View>
   );
 };
 
@@ -225,25 +287,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
-    color: 'black',
   },
-
-  mainInfo: {
+  mainContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-  sideInfo: {
+  mainInfoContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-
+  sideInfoContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   menuButtons: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
+    marginBottom: 10,
   },
-
   title: {
     fontSize: 30,
     marginBottom: 20,
@@ -288,6 +350,44 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     alignItems: 'center',
+  },
+  musicContainer: {
+    flex: 1,
+    padding: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+    position: 'fixed',
+    bottom: 0,
+    width: 100,
+    lineHeight: 1,
+  },
+  musicInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    paddingBottom: 5,
+    gap: 10,
+  },
+  musicText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  artistText: {
+    textAlign: 'center',
+  },
+  controlButton: {
+    padding: 5,
+    borderRadius: 5,
+    backgroundColor: '#FFD700',
+  },
+  controlText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

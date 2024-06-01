@@ -70,7 +70,7 @@ const ShopView = ({
         )}
         keyExtractor={item => item.id}
       />
-      <Text style={styles.title}>Gold: {gold.toFixed(2)}</Text>
+      <Text style={styles.title}>${gold.toFixed(2)}</Text>
       <TouchableOpacity style={styles.backButton} onPress={closeShop}>
         <Text style={styles.backButtonText}>Back to the Game</Text>
       </TouchableOpacity>
