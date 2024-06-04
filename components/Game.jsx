@@ -84,7 +84,7 @@ const GameView = ({ navigation }) => {
   const resetGame = useCallback(() => {
     setScore(0);
     setGold(0);
-    setClickMultiplier(15);
+    setClickMultiplier(1);
     setGoldMultiplier(1);
     setLevel(1);
     setEnemyHealth(25);
