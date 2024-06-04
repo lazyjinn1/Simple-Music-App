@@ -60,6 +60,15 @@ const GameView = ({navigation}) => {
     setGameOverVisible,
   } = useContext(GameContext);
 
+  const levelRef = useRef(level);
+  const scoreRef = useRef(score);
+
+  // Update refs whenever level or score changes
+  useEffect(() => {
+    levelRef.current = level;
+    scoreRef.current = score;
+  }, [level, score]);
+
   Sound.setCategory('Playback');
 
   const resetGame = useCallback(() => {
@@ -91,6 +100,9 @@ const GameView = ({navigation}) => {
   }, [resetGame]);
 
   useEffect(() => {
+    if (sound.current) {
+      sound.current.release(); // Release the current sound object
+    }
     sound.current = new Sound(
       songs[currentSongIndex].uri,
       Sound.MAIN_BUNDLE,
@@ -99,16 +111,20 @@ const GameView = ({navigation}) => {
           console.log('Error loading sound: ', error);
           return;
         }
-        sound.current.play(success => {
-          if (success) {
-            console.log('successfully finished playing');
-          } else {
-            console.log('playback failed due to audio decoding errors');
-          }
-        });
+        console.log('Sound loaded:', sound.current);
+        if (isPlaying) {
+          // Check if the sound should play
+          sound.current.play(success => {
+            if (success) {
+              console.log('successfully finished playing');
+            } else {
+              console.log('playback failed due to audio decoding errors');
+            }
+          });
+        }
       },
     );
-  }, [currentSongIndex, songs]);
+  }, [currentSongIndex, songs, isPlaying]);
 
   const muteMusic = () => {
     if (!sound.current || !isPlaying) {
@@ -120,13 +136,11 @@ const GameView = ({navigation}) => {
 
   const startGame = () => {
     setStart(true);
-    if (level !== 1 && level % 5 === 1) {
-      const songIndex = Math.floor((level - 1) / 5);
+    if (levelRef.current !== 1 && levelRef.current % 5 === 1) {
+      const songIndex = Math.floor((levelRef.current - 1) / 5);
       setCurrentSongIndex(songIndex);
-      sound.current.play();
       setIsPlaying(true);
-    } else if (level === 1) {
-      sound.current.play();
+    } else if (levelRef.current === 1) {
       setIsPlaying(true);
     }
   };
@@ -140,7 +154,11 @@ const GameView = ({navigation}) => {
             return prevTimer - 1;
           } else {
             clearInterval(timerInterval);
-            // navigation.navigate('GameOverScreen', {navigation, level, score});
+            navigation.navigate('GameOverScreen', {
+              navigation,
+              level: levelRef.current,
+              score: scoreRef.current,
+            });
             return prevTimer;
           }
         });
@@ -148,17 +166,12 @@ const GameView = ({navigation}) => {
     }
     return () => {
       clearInterval(timerInterval);
-      sound.current.pause();
-      sound.current.release();
+      if (sound.current) {
+        sound.current.pause();
+        sound.current.release();
+      }
     };
-  }, [
-    start,
-    setTimer,
-    setGameOverVisible,
-    setIsPlaying,
-    resetGame,
-    // navigation,
-  ]);
+  }, [start, setTimer, setGameOverVisible, setIsPlaying, navigation]);
 
   const incrementClicks = () => {
     setScore(prevScore => prevScore + clickMultiplier);
