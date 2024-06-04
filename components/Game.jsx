@@ -13,19 +13,22 @@ import {
   Alert,
   Modal,
 } from 'react-native';
-import { GameContext } from '../App';
+import {GameContext} from '../App';
 import ShopView from './Shop';
 import Sound from 'react-native-sound';
-import Snackbar from 'react-native-snackbar'
+import Snackbar from 'react-native-snackbar';
 
-const GameView = ({ navigation }) => {
+const GameView = ({navigation}) => {
   const songs = useMemo(
     () => [
-      { uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow' },
-      { uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven' },
-      { uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly' },
-      { uri: require('../assets/songs/KillTheLights.mp3'), name: 'Kill The Lights' },
-      { uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty' },
+      {uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow'},
+      {uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven'},
+      {uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly'},
+      {
+        uri: require('../assets/songs/KillTheLights.mp3'),
+        name: 'Kill The Lights',
+      },
+      {uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty'},
     ],
     [],
   );
@@ -46,6 +49,7 @@ const GameView = ({ navigation }) => {
     setStart,
     score,
     setScore,
+    // eslint-disable-next-line no-unused-vars
     damageDone,
     setDamageDone,
     level,
@@ -63,7 +67,7 @@ const GameView = ({ navigation }) => {
     shopVisible,
     setShopVisible,
     isMuted,
-    setIsMuted
+    setIsMuted,
   } = useContext(GameContext);
 
   // Update refs whenever level or score changes
@@ -75,12 +79,12 @@ const GameView = ({ navigation }) => {
   Sound.setCategory('Playback');
 
   const startMusic = () => {
-    if(sound.current){
+    if (sound.current) {
       sound.current.stop(() => {
         sound.current.play();
       });
     }
-  }
+  };
   const resetGame = useCallback(() => {
     setScore(0);
     setGold(0);
@@ -110,8 +114,8 @@ const GameView = ({ navigation }) => {
     resetGame();
   }, [resetGame]);
 
-  const setNewSong = async () => {
-    if(sound.current){
+  const setNewSong = useCallback(() => {
+    if (sound.current) {
       sound.current.stop(() => {
         sound.current.release();
       });
@@ -119,14 +123,19 @@ const GameView = ({ navigation }) => {
     sound.current = new Sound(
       songs[currentSongIndex].uri,
       Sound.MAIN_BUNDLE,
-      (error) => {
+      error => {
         if (error) {
           console.log('Error loading sound: ', error);
           return;
         }
-        console.log('duration in seconds: ' + sound.current.getDuration() + ' number of channels: ' + sound.current.getNumberOfChannels());
+        console.log(
+          'duration in seconds: ' +
+            sound.current.getDuration() +
+            ' number of channels: ' +
+            sound.current.getNumberOfChannels(),
+        );
         if (isPlaying) {
-          sound.current.play((success) => {
+          sound.current.play(success => {
             if (success) {
               console.log('successfully finished playing');
             } else {
@@ -134,15 +143,15 @@ const GameView = ({ navigation }) => {
             }
           });
         }
-      }
-    )
+      },
+    );
     sound.current.play();
     setIsPlaying(true);
-  }
+  }, [currentSongIndex, isPlaying, setIsPlaying, songs]);
 
   useEffect(() => {
     setNewSong();
-  }, [currentSongIndex, songs, isPlaying]);
+  }, [setNewSong]);
 
   const muteMusic = () => {
     if (!sound.current || !isPlaying) {
@@ -179,7 +188,7 @@ const GameView = ({ navigation }) => {
               level: levelRef.current,
               score: scoreRef.current,
             });
-            if(sound.current){
+            if (sound.current) {
               sound.current.stop(() => {
                 sound.current.release();
               });
@@ -193,7 +202,7 @@ const GameView = ({ navigation }) => {
     return () => {
       clearInterval(timerIntervalRef.current);
     };
-  }, [start, paused]);
+  }, [start, paused, setTimer, navigation]);
 
   const incrementClicks = () => {
     setScore(prevScore => prevScore + clickMultiplier);
@@ -220,29 +229,26 @@ const GameView = ({ navigation }) => {
       setDamageDone(0);
       setEnemyHealth(25 * newLevel * 1.1);
       setTimer(10);
-      
+
       // Check if level is a multiple of 5 + 1
       if (newLevel % 5 === 1) {
         setStart(false);
-        const songIndex = Math.floor((newLevel - 1) / songs.length)
+        const songIndex = Math.floor((newLevel - 1) / songs.length);
         setCurrentSongIndex(songIndex);
-        Alert.alert(`New Song Unlocked: \nTitle: ${songs[songIndex].name}`)
+        Alert.alert(`New Song Unlocked: \nTitle: ${songs[songIndex].name}`);
       }
       return newLevel;
     });
   }, [
     setLevel,
-    goldMultiplier,
     setGold,
     setDamageDone,
     setEnemyHealth,
     setTimer,
+    goldMultiplier,
     setStart,
+    songs,
     setCurrentSongIndex,
-    setIsPlaying,
-    songs.length,
-    isPlaying,
-    sound,
   ]);
 
   const openShop = () => {
@@ -299,15 +305,19 @@ const GameView = ({ navigation }) => {
         </View>
         <View style={styles.musicContainer}>
           <View style={styles.musicControls}>
-            {isMuted ?
-              <TouchableOpacity style={styles.controlButton} onPress={muteMusic}>
+            {isMuted ? (
+              <TouchableOpacity
+                style={styles.controlButton}
+                onPress={muteMusic}>
                 <Text style={styles.controlText}>Unmute</Text>
               </TouchableOpacity>
-              :
-              <TouchableOpacity style={styles.controlButton} onPress={muteMusic}>
+            ) : (
+              <TouchableOpacity
+                style={styles.controlButton}
+                onPress={muteMusic}>
                 <Text style={styles.controlText}>Mute</Text>
               </TouchableOpacity>
-            }
+            )}
             <View style={styles.musicInfo}>
               <Text style={styles.musicText}>
                 {songs[currentSongIndex].name}

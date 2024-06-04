@@ -56,7 +56,7 @@ const App = () => {
         shopVisible,
         setShopVisible,
         isMuted,
-        setIsMuted
+        setIsMuted,
       }}>
       <NavigationContainer>
         <Stack.Navigator initialRouteName="MainMenuScreen">
@@ -64,6 +64,7 @@ const App = () => {
             name="MainMenuScreen"
             component={MainMenuView}
             options={{
+              headerShown: false,
               headerBackVisible: false,
               headerBackButtonMenuEnabled: false,
             }}
@@ -72,6 +73,7 @@ const App = () => {
             name="GameScreen"
             component={GameView}
             options={{
+              headerShown: false,
               headerBackVisible: false,
               headerBackButtonMenuEnabled: false,
             }}
@@ -80,6 +82,7 @@ const App = () => {
             name="ShopScreen"
             component={ShopView}
             options={{
+              headerShown: false,
               headerBackVisible: false,
               headerBackButtonMenuEnabled: false,
             }}
@@ -88,6 +91,7 @@ const App = () => {
             name="GameOverScreen"
             component={GameOverView}
             options={{
+              headerShown: false,
               headerBackVisible: false,
               headerBackButtonMenuEnabled: false,
             }}
@@ -96,6 +100,7 @@ const App = () => {
             name="LeaderboardScreen"
             component={LeaderboardView}
             options={{
+              headerShown: false,
               headerBackVisible: false,
               headerBackButtonMenuEnabled: false,
             }}
