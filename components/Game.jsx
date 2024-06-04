@@ -226,7 +226,7 @@ const GameView = ({ navigation }) => {
         setStart(false);
         const songIndex = Math.floor((newLevel - 1) / songs.length)
         setCurrentSongIndex(songIndex);
-        Alert.alert(`New Song Unlocked: \nTitle: ${songs[currentSongIndex].name}`)
+        Alert.alert(`New Song Unlocked: \nTitle: ${songs[songIndex].name}`)
       }
       return newLevel;
     });
