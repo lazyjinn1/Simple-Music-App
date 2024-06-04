@@ -13,21 +13,19 @@ import {
   Alert,
   Modal,
 } from 'react-native';
-import {GameContext} from '../App';
+import { GameContext } from '../App';
 import ShopView from './Shop';
 import Sound from 'react-native-sound';
+import Snackbar from 'react-native-snackbar'
 
-const GameView = ({navigation}) => {
+const GameView = ({ navigation }) => {
   const songs = useMemo(
     () => [
-      {uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow'},
-      {uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven'},
-      {uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly'},
-      {
-        uri: require('../assets/songs/KillTheLights.mp3'),
-        name: 'Kill The Lights',
-      },
-      {uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty'},
+      { uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow' },
+      { uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven' },
+      { uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly' },
+      { uri: require('../assets/songs/KillTheLights.mp3'), name: 'Kill The Lights' },
+      { uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty' },
     ],
     [],
   );
@@ -64,8 +62,9 @@ const GameView = ({navigation}) => {
     setIsPlaying,
     shopVisible,
     setShopVisible,
+    isMuted,
+    setIsMuted
   } = useContext(GameContext);
-
 
   // Update refs whenever level or score changes
   useEffect(() => {
@@ -75,10 +74,17 @@ const GameView = ({navigation}) => {
 
   Sound.setCategory('Playback');
 
+  const startMusic = () => {
+    if(sound.current){
+      sound.current.stop(() => {
+        sound.current.play();
+      });
+    }
+  }
   const resetGame = useCallback(() => {
     setScore(0);
     setGold(0);
-    setClickMultiplier(1);
+    setClickMultiplier(15);
     setGoldMultiplier(1);
     setLevel(1);
     setEnemyHealth(25);
@@ -86,6 +92,7 @@ const GameView = ({navigation}) => {
     setStart(false);
     setCurrentSongIndex(0);
     setIsPlaying(false);
+    startMusic();
   }, [
     setScore,
     setGold,
@@ -103,10 +110,10 @@ const GameView = ({navigation}) => {
     resetGame();
   }, [resetGame]);
 
-  useEffect(() => {
-    if (sound.current) {
+  const setNewSong = async () => {
+    if(sound.current){
       sound.current.stop(() => {
-        sound.current.release(); // Release the current sound object
+        sound.current.release();
       });
     }
     sound.current = new Sound(
@@ -128,7 +135,13 @@ const GameView = ({navigation}) => {
           });
         }
       }
-    );
+    )
+    sound.current.play();
+    setIsPlaying(true);
+  }
+
+  useEffect(() => {
+    setNewSong();
   }, [currentSongIndex, songs, isPlaying]);
 
   const muteMusic = () => {
@@ -136,18 +149,21 @@ const GameView = ({navigation}) => {
       Alert.alert('No song playing currently');
     } else {
       let currentVolume = sound.current.getVolume();
-      if (currentVolume !== 0){
+      if (currentVolume !== 0) {
         sound.current.setVolume(0);
         console.log('Current Volume: ' + sound.current.getVolume());
+        setIsMuted(true);
       } else {
         sound.current.setVolume(1);
         console.log('Current Volume: ' + sound.current.getVolume());
+        setIsMuted(false);
       }
     }
   };
 
   const startGame = () => {
     setStart(true);
+    sound.current.play();
     setIsPlaying(true);
   };
 
@@ -163,6 +179,11 @@ const GameView = ({navigation}) => {
               level: levelRef.current,
               score: scoreRef.current,
             });
+            if(sound.current){
+              sound.current.stop(() => {
+                sound.current.release();
+              });
+            }
             return prevTimer;
           }
         });
@@ -191,19 +212,21 @@ const GameView = ({navigation}) => {
   const levelUp = useCallback(() => {
     setLevel(prevLevel => {
       const newLevel = prevLevel + 1;
-      Alert.alert(`Congratulations! Level: ${newLevel}`);
+      Snackbar.show({
+        text: `Congratulations! Level: ${newLevel}`,
+        duration: Snackbar.LENGTH_SHORT,
+      });
       setGold(prevGold => prevGold + goldMultiplier * newLevel * 15);
       setDamageDone(0);
       setEnemyHealth(25 * newLevel * 1.1);
       setTimer(10);
-      setStart(false);
+      
+      // Check if level is a multiple of 5 + 1
       if (newLevel % 5 === 1) {
-        const songIndex = Math.floor((newLevel - 1) / 5);
+        setStart(false);
+        const songIndex = Math.floor((newLevel - 1) / songs.length)
         setCurrentSongIndex(songIndex);
-        sound.current.stop(() => {
-          sound.current.play();
-        })
-        setIsPlaying(true);
+        Alert.alert(`New Song Unlocked: \nTitle: ${songs[currentSongIndex].name}`)
       }
       return newLevel;
     });
@@ -217,6 +240,9 @@ const GameView = ({navigation}) => {
     setStart,
     setCurrentSongIndex,
     setIsPlaying,
+    songs.length,
+    isPlaying,
+    sound,
   ]);
 
   const openShop = () => {
@@ -273,9 +299,15 @@ const GameView = ({navigation}) => {
         </View>
         <View style={styles.musicContainer}>
           <View style={styles.musicControls}>
-            <TouchableOpacity style={styles.controlButton} onPress={muteMusic}>
-              <Text style={styles.controlText}>Mute</Text>
-            </TouchableOpacity>
+            {isMuted ?
+              <TouchableOpacity style={styles.controlButton} onPress={muteMusic}>
+                <Text style={styles.controlText}>Unmute</Text>
+              </TouchableOpacity>
+              :
+              <TouchableOpacity style={styles.controlButton} onPress={muteMusic}>
+                <Text style={styles.controlText}>Mute</Text>
+              </TouchableOpacity>
+            }
             <View style={styles.musicInfo}>
               <Text style={styles.musicText}>
                 {songs[currentSongIndex].name}
