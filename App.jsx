@@ -19,8 +19,9 @@ const App = () => {
   const [score, setScore] = useState(0);
   const [damageDone, setDamageDone] = useState(0);
   const [level, setLevel] = useState(1);
-  const [enemyHealth, setEnemyHealth] = useState(50);
+  const [enemyHealth, setEnemyHealth] = useState(25);
   const [timer, setTimer] = useState(10);
+  const [paused, setPaused] = useState(false);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [shopVisible, setShopVisible] = useState(false);
@@ -45,6 +46,8 @@ const App = () => {
         setEnemyHealth,
         timer,
         setTimer,
+        paused,
+        setPaused,
         currentSongIndex,
         setCurrentSongIndex,
         isPlaying,

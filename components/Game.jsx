@@ -33,6 +33,10 @@ const GameView = ({navigation}) => {
   );
 
   const sound = useRef(null);
+  const levelRef = useRef(level);
+  const scoreRef = useRef(score);
+  const timerIntervalRef = useRef(null);
+
   const {
     gold,
     setGold,
@@ -44,6 +48,7 @@ const GameView = ({navigation}) => {
     setStart,
     score,
     setScore,
+    damageDone,
     setDamageDone,
     level,
     setLevel,
@@ -51,17 +56,16 @@ const GameView = ({navigation}) => {
     setEnemyHealth,
     timer,
     setTimer,
+    paused,
+    setPaused,
     currentSongIndex,
     setCurrentSongIndex,
     isPlaying,
     setIsPlaying,
     shopVisible,
     setShopVisible,
-    setGameOverVisible,
   } = useContext(GameContext);
 
-  const levelRef = useRef(level);
-  const scoreRef = useRef(score);
 
   // Update refs whenever level or score changes
   useEffect(() => {
@@ -101,20 +105,21 @@ const GameView = ({navigation}) => {
 
   useEffect(() => {
     if (sound.current) {
-      sound.current.release(); // Release the current sound object
+      sound.current.stop(() => {
+        sound.current.release(); // Release the current sound object
+      });
     }
     sound.current = new Sound(
       songs[currentSongIndex].uri,
       Sound.MAIN_BUNDLE,
-      error => {
+      (error) => {
         if (error) {
           console.log('Error loading sound: ', error);
           return;
         }
-        console.log('Sound loaded:', sound.current);
+        console.log('duration in seconds: ' + sound.current.getDuration() + ' number of channels: ' + sound.current.getNumberOfChannels());
         if (isPlaying) {
-          // Check if the sound should play
-          sound.current.play(success => {
+          sound.current.play((success) => {
             if (success) {
               console.log('successfully finished playing');
             } else {
@@ -122,7 +127,7 @@ const GameView = ({navigation}) => {
             }
           });
         }
-      },
+      }
     );
   }, [currentSongIndex, songs, isPlaying]);
 
@@ -130,32 +135,31 @@ const GameView = ({navigation}) => {
     if (!sound.current || !isPlaying) {
       Alert.alert('No song playing currently');
     } else {
-      sound.current.setVolume(0);
+      let currentVolume = sound.current.getVolume();
+      if (currentVolume !== 0){
+        sound.current.setVolume(0);
+        console.log('Current Volume: ' + sound.current.getVolume());
+      } else {
+        sound.current.setVolume(1);
+        console.log('Current Volume: ' + sound.current.getVolume());
+      }
     }
   };
 
   const startGame = () => {
     setStart(true);
-    if (levelRef.current !== 1 && levelRef.current % 5 === 1) {
-      const songIndex = Math.floor((levelRef.current - 1) / 5);
-      setCurrentSongIndex(songIndex);
-      setIsPlaying(true);
-    } else if (levelRef.current === 1) {
-      setIsPlaying(true);
-    }
+    setIsPlaying(true);
   };
 
   useEffect(() => {
-    let timerInterval;
-    if (start) {
-      timerInterval = setInterval(() => {
+    if (start && !paused) {
+      timerIntervalRef.current = setInterval(() => {
         setTimer(prevTimer => {
           if (prevTimer > 0) {
             return prevTimer - 1;
           } else {
-            clearInterval(timerInterval);
+            clearInterval(timerIntervalRef.current);
             navigation.navigate('GameOverScreen', {
-              navigation,
               level: levelRef.current,
               score: scoreRef.current,
             });
@@ -164,14 +168,11 @@ const GameView = ({navigation}) => {
         });
       }, 1000);
     }
+
     return () => {
-      clearInterval(timerInterval);
-      if (sound.current) {
-        sound.current.pause();
-        sound.current.release();
-      }
+      clearInterval(timerIntervalRef.current);
     };
-  }, [start, setTimer, setGameOverVisible, setIsPlaying, navigation]);
+  }, [start, paused]);
 
   const incrementClicks = () => {
     setScore(prevScore => prevScore + clickMultiplier);
@@ -196,6 +197,14 @@ const GameView = ({navigation}) => {
       setEnemyHealth(25 * newLevel * 1.1);
       setTimer(10);
       setStart(false);
+      if (newLevel % 5 === 1) {
+        const songIndex = Math.floor((newLevel - 1) / 5);
+        setCurrentSongIndex(songIndex);
+        sound.current.stop(() => {
+          sound.current.play();
+        })
+        setIsPlaying(true);
+      }
       return newLevel;
     });
   }, [
@@ -206,13 +215,17 @@ const GameView = ({navigation}) => {
     setEnemyHealth,
     setTimer,
     setStart,
+    setCurrentSongIndex,
+    setIsPlaying,
   ]);
 
   const openShop = () => {
+    setPaused(true);
     setShopVisible(true);
   };
 
   const closeShop = () => {
+    setPaused(false);
     setShopVisible(false);
   };
 
