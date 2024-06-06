@@ -25,7 +25,10 @@ const App = () => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [shopVisible, setShopVisible] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [showNext, setShowNext] = useState(false);
+  const [showPrev, setShowPrev] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [startTimer, setStartTimer] = useState(3);
   return (
     <GameContext.Provider
       value={{
@@ -55,8 +58,14 @@ const App = () => {
         setIsPlaying,
         shopVisible,
         setShopVisible,
-        isMuted,
-        setIsMuted,
+        showNext,
+        setShowNext,
+        showPrev,
+        setShowPrev,
+        isDisabled,
+        setIsDisabled,
+        startTimer,
+        setStartTimer,
       }}>
       <NavigationContainer>
         <Stack.Navigator initialRouteName="MainMenuScreen">

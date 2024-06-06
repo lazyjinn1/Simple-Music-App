@@ -1,12 +1,6 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
-import Snackbar from 'react-native-snackbar'
+import {View, Text, FlatList, TouchableOpacity, StyleSheet} from 'react-native';
+import Snackbar from 'react-native-snackbar';
 
 const UpgradeItem = ({upgrade, onPurchase}) => {
   const {name, cost, clickBonus, goldBonus} = upgrade;

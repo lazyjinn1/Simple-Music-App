@@ -17,18 +17,48 @@ import {GameContext} from '../App';
 import ShopView from './Shop';
 import Sound from 'react-native-sound';
 import Snackbar from 'react-native-snackbar';
+import RadialGradient from 'react-native-radial-gradient';
 
 const GameView = ({navigation}) => {
   const songs = useMemo(
     () => [
       {uri: require('../assets/songs/Yellow.mp3'), name: 'Yellow'},
+      {uri: require('../assets/songs/Business.mp3'), name: 'Business'},
+      {uri: require('../assets/songs/Joji.mp3'), name: 'Joji'},
+      {uri: require('../assets/songs/Bankroll.mp3'), name: 'Bankroll'},
+      {uri: require('../assets/songs/FuckItUp.mp3'), name: 'Fuck It Up'},
+      {uri: require('../assets/songs/Latina.mp3'), name: 'Latina'},
       {uri: require('../assets/songs/ScissorSeven.mp3'), name: 'Scissor Seven'},
+      {uri: require('../assets/songs/Tinh.mp3'), name: 'Tinh'},
+      {uri: require('../assets/songs/30Clip.mp3'), name: '30 Clip'},
+      {
+        uri: require('../assets/songs/LeaveItBehindCalifornia.mp3'),
+        name: 'Leave It Behind California',
+      },
+      {uri: require('../assets/songs/OnlyBad.mp3'), name: 'Only Bad'},
       {uri: require('../assets/songs/ForestFly.mp3'), name: 'Forest Fly'},
+      {uri: require('../assets/songs/PariahNexus.mp3'), name: 'Pariah Nexus'},
+      {uri: require('../assets/songs/TheChorus.mp3'), name: 'The Chorus'},
+      {
+        uri: require('../assets/songs/ImmersiveRealEstate.mp3'),
+        name: 'Immersive Real Estate',
+      },
       {
         uri: require('../assets/songs/KillTheLights.mp3'),
         name: 'Kill The Lights',
       },
+      {uri: require('../assets/songs/Pluto.mp3'), name: 'Pluto'},
+      {uri: require('../assets/songs/Pokemon.mp3'), name: 'Pokemon'},
+      {uri: require('../assets/songs/LosAngeles.mp3'), name: 'Los Angeles'},
       {uri: require('../assets/songs/Shawty.mp3'), name: 'Shawty'},
+      {uri: require('../assets/songs/Enough.mp3'), name: 'Enough'},
+      {uri: require('../assets/songs/Camera.mp3'), name: 'Camera'},
+      {uri: require('../assets/songs/Vietnamese.mp3'), name: 'Vietnamese'},
+      {
+        uri: require('../assets/songs/TalkingToBrunoMars.mp3'),
+        name: 'Talking To Bruno Mars',
+      },
+      {uri: require('../assets/songs/Butterfly.mp3'), name: 'Butterfly'},
     ],
     [],
   );
@@ -66,8 +96,14 @@ const GameView = ({navigation}) => {
     setIsPlaying,
     shopVisible,
     setShopVisible,
-    isMuted,
-    setIsMuted,
+    showNext,
+    setShowNext,
+    showPrev,
+    setShowPrev,
+    isDisabled,
+    setIsDisabled,
+    startTimer,
+    setStartTimer,
   } = useContext(GameContext);
 
   // Update refs whenever level or score changes
@@ -128,12 +164,6 @@ const GameView = ({navigation}) => {
           console.log('Error loading sound: ', error);
           return;
         }
-        console.log(
-          'duration in seconds: ' +
-            sound.current.getDuration() +
-            ' number of channels: ' +
-            sound.current.getNumberOfChannels(),
-        );
         if (isPlaying) {
           sound.current.play(success => {
             if (success) {
@@ -153,27 +183,9 @@ const GameView = ({navigation}) => {
     setNewSong();
   }, [setNewSong]);
 
-  const muteMusic = () => {
-    if (!sound.current || !isPlaying) {
-      Alert.alert('No song playing currently');
-    } else {
-      let currentVolume = sound.current.getVolume();
-      if (currentVolume !== 0) {
-        sound.current.setVolume(0);
-        console.log('Current Volume: ' + sound.current.getVolume());
-        setIsMuted(true);
-      } else {
-        sound.current.setVolume(1);
-        console.log('Current Volume: ' + sound.current.getVolume());
-        setIsMuted(false);
-      }
-    }
-  };
-
   const startGame = () => {
     setStart(true);
     sound.current.play();
-    setIsPlaying(true);
   };
 
   useEffect(() => {
@@ -225,17 +237,28 @@ const GameView = ({navigation}) => {
         text: `Congratulations! Level: ${newLevel}`,
         duration: Snackbar.LENGTH_SHORT,
       });
-      setGold(prevGold => prevGold + goldMultiplier * newLevel * 15);
+      setGold(prevGold => prevGold + goldMultiplier * newLevel);
       setDamageDone(0);
       setEnemyHealth(25 * newLevel * 1.1);
       setTimer(10);
 
       // Check if level is a multiple of 5 + 1
-      if (newLevel % 5 === 1) {
+      if (newLevel % 3 === 1) {
         setStart(false);
-        const songIndex = Math.floor((newLevel - 1) / songs.length);
-        setCurrentSongIndex(songIndex);
-        Alert.alert(`New Song Unlocked: \nTitle: ${songs[songIndex].name}`);
+        setIsDisabled(true);
+        const newSongIndex = Math.floor((newLevel - 1) / 3);
+        Alert.alert(`Unlocked a new Song: \n${songs[newSongIndex].name}`);
+        const startInterval = setInterval(() => {
+          setStartTimer(prevStartTimer => {
+            if (prevStartTimer > 1) {
+              return prevStartTimer - 1;
+            } else {
+              clearInterval(startInterval);
+              setIsDisabled(false);
+              return 3;
+            }
+          });
+        }, 1000);
       }
       return newLevel;
     });
@@ -247,8 +270,9 @@ const GameView = ({navigation}) => {
     setTimer,
     goldMultiplier,
     setStart,
+    setIsDisabled,
     songs,
-    setCurrentSongIndex,
+    setStartTimer,
   ]);
 
   const openShop = () => {
@@ -261,35 +285,131 @@ const GameView = ({navigation}) => {
     setShopVisible(false);
   };
 
+  const showPrevNextButtons = useCallback(() => {
+    if (
+      !start &&
+      level > 3 &&
+      level > currentSongIndex * 3 &&
+      currentSongIndex > 0
+    ) {
+      setShowPrev(true);
+    } else {
+      setShowPrev(false);
+    }
+    if (
+      !start &&
+      level > 3 &&
+      level > (currentSongIndex + 1) * 3 &&
+      currentSongIndex < songs.length - 1
+    ) {
+      setShowNext(true);
+    } else {
+      setShowNext(false);
+    }
+  }, [currentSongIndex, level, setShowNext, setShowPrev, songs.length, start]);
+
+  useEffect(() => {
+    showPrevNextButtons();
+  }, [showPrevNextButtons]);
+
+  const nextSong = () => {
+    if (currentSongIndex === songs.length - 1) {
+      sound.current.release;
+      setCurrentSongIndex(0); // Loop back to the first song
+    } else {
+      sound.current.release;
+      setCurrentSongIndex(currentSongIndex + 1);
+    }
+  };
+
+  const prevSong = () => {
+    if (currentSongIndex === 0) {
+      sound.current.release;
+      setCurrentSongIndex(songs.length - 1); // Loop back to the last song
+    } else {
+      sound.current.release;
+      setCurrentSongIndex(currentSongIndex - 1);
+    }
+  };
+
+  const playSong = () => {
+    sound.current.play();
+    setIsPlaying(true);
+  };
+
   return (
-    <View style={styles.container}>
+    <RadialGradient
+      style={styles.container}
+      colors={['white', 'blue']}
+      stops={[0.1, 1]}
+      center={[50, 100]}
+      radius={600}>
       <View style={styles.mainContainer}>
         <Text style={styles.title}>Level: {level}</Text>
         <Text style={styles.timer}>Time Left: {timer} seconds</Text>
         <View style={styles.mainInfoContainer}>
-          <Text style={styles.score}>Score: {score}</Text>
-          <Text style={styles.score}>
+          <Text style={styles.stats}>Score: {score}</Text>
+          <Text style={styles.stats}>
             Enemy Health: {enemyHealth.toFixed(1)}
           </Text>
         </View>
         <View style={styles.sideInfoContainer}>
-          <Text style={styles.score}>Gold: ${gold.toFixed(2)}</Text>
-          <Text style={styles.score}>
+          <Text style={styles.stats}>Gold: ${gold.toFixed(2)}</Text>
+          <Text style={styles.stats}>
             Click Multiplier: {clickMultiplier.toFixed(1)}x
           </Text>
-          <Text style={styles.score}>
+          <Text style={styles.stats}>
             Gold Multiplier: {goldMultiplier.toFixed(1)}x
           </Text>
         </View>
+
         {!start ? (
-          <TouchableOpacity style={styles.mainButton} onPress={startGame}>
-            <Text style={styles.mainButtonText}>Start</Text>
-          </TouchableOpacity>
+          isDisabled ? (
+            <TouchableOpacity style={styles.mainButtonShoot} disabled={true}>
+              <Text style={styles.mainButtonText}>{startTimer}</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.mainButtonStart}
+              onPress={startGame}>
+              <Text style={styles.mainButtonText}>Start</Text>
+            </TouchableOpacity>
+          )
         ) : (
-          <TouchableOpacity style={styles.mainButton} onPress={incrementClicks}>
-            <Text style={styles.mainButtonText}>Click me!</Text>
+          <TouchableOpacity
+            style={styles.mainButtonShoot}
+            onPress={incrementClicks}>
+            <Text style={styles.mainButtonText}>Shoot!</Text>
           </TouchableOpacity>
         )}
+        <View style={styles.musicContainer}>
+          <Text style={styles.musicTitle}>♪ ♪ ♪</Text>
+          <View style={styles.musicInfo}>
+            <TouchableOpacity
+              style={showPrev ? styles.controlButton : styles.invisibleButton}
+              onPress={prevSong}
+              disabled={!showPrev}>
+              <Text style={styles.controlText}>◄</Text>
+            </TouchableOpacity>
+            <View style={styles.songContainer}>
+              <TouchableOpacity
+                style={styles.musicText}
+                onPress={playSong}
+                disabled={!isPlaying}>
+                <Text style={styles.musicText}>
+                  {songs[currentSongIndex].name}
+                </Text>
+              </TouchableOpacity>
+              <Text style={styles.artistText}>by Dragon</Text>
+            </View>
+            <TouchableOpacity
+              style={showNext ? styles.controlButton : styles.invisibleButton}
+              onPress={nextSong}
+              disabled={!showNext}>
+              <Text style={styles.controlText}>►</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         <View style={styles.menuButtons}>
           <TouchableOpacity style={styles.button} onPress={openShop}>
             <Text style={styles.buttonText}>Shop</Text>
@@ -302,29 +422,6 @@ const GameView = ({navigation}) => {
             onPress={() => navigation.navigate('MainMenuScreen')}>
             <Text style={styles.buttonText}>Main Menu</Text>
           </TouchableOpacity>
-        </View>
-        <View style={styles.musicContainer}>
-          <View style={styles.musicControls}>
-            {isMuted ? (
-              <TouchableOpacity
-                style={styles.controlButton}
-                onPress={muteMusic}>
-                <Text style={styles.controlText}>Unmute</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.controlButton}
-                onPress={muteMusic}>
-                <Text style={styles.controlText}>Mute</Text>
-              </TouchableOpacity>
-            )}
-            <View style={styles.musicInfo}>
-              <Text style={styles.musicText}>
-                {songs[currentSongIndex].name}
-              </Text>
-              <Text style={styles.artistText}>by Dragon</Text>
-            </View>
-          </View>
         </View>
       </View>
       <Modal
@@ -345,16 +442,16 @@ const GameView = ({navigation}) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </RadialGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 2,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: 'darkblue',
   },
   mainContainer: {
     justifyContent: 'center',
@@ -379,7 +476,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontWeight: 'bold',
   },
-  score: {
+  stats: {
     fontSize: 15,
     marginBottom: 5,
   },
@@ -387,7 +484,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     alignItems: 'center',
     backgroundColor: '#28a745',
-    padding: 10,
+    padding: 8,
     borderRadius: 5,
     marginVertical: 5,
   },
@@ -395,13 +492,19 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
   },
-  mainButton: {
-    backgroundColor: 'red',
+  mainButtonStart: {
+    backgroundColor: 'green',
     padding: 35,
-    borderRadius: 5,
+    borderRadius: 50,
     marginTop: 25,
     marginBottom: 25,
-    color: '#000',
+  },
+  mainButtonShoot: {
+    backgroundColor: 'red',
+    padding: 35,
+    borderRadius: 50,
+    marginTop: 25,
+    marginBottom: 25,
   },
   mainButtonText: {
     fontSize: 50,
@@ -409,53 +512,66 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
+    padding: 50,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    padding: 20,
+    margin: 5,
+    padding: 10,
+    borderRadius: 40,
     backgroundColor: 'white',
-    borderRadius: 10,
     alignItems: 'center',
   },
   musicContainer: {
-    flex: 1,
-    padding: 2,
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    position: 'fixed',
+    textAlign: 'center',
     bottom: 0,
-    width: 100,
-    lineHeight: 1,
+    paddingHorizontal: 15,
+    paddingBottom: 8,
+    position: 'fixed',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  musicTitle: {
+    fontSize: 35,
+    marginTop: 5,
+    marginBottom: 5,
+    fontWeight: 'bold',
   },
   musicInfo: {
-    flex: 1,
     flexDirection: 'row',
-    fontSize: 10,
     fontWeight: 'bold',
-    marginBottom: 10,
-    paddingBottom: 5,
-    gap: 10,
+    alignItems: 'center',
+    gap: 15,
   },
   musicText: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  songContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   artistText: {
     textAlign: 'center',
   },
   controlButton: {
-    padding: 5,
+    padding: 8,
     borderRadius: 5,
     backgroundColor: '#FFD700',
   },
+  invisibleButton: {
+    padding: 8,
+    borderRadius: 5,
+    opacity: 0,
+  },
   controlText: {
-    fontSize: 16,
+    fontSize: 25,
     fontWeight: 'bold',
-    textAlign: 'center',
   },
 });
 
