@@ -242,7 +242,7 @@ const GameView = ({navigation}) => {
       setEnemyHealth(25 * newLevel * 1.1);
       setTimer(10);
 
-      // Check if level is a multiple of 5 + 1
+      // Check if level is a multiple of 3 + 1
       if (newLevel % 3 === 1) {
         setStart(false);
         setIsDisabled(true);

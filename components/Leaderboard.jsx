@@ -1,13 +1,14 @@
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Alert,
   FlatList,
+  View,
 } from 'react-native';
+import RadialGradient from 'react-native-radial-gradient';
 
 const LeaderboardView = ({navigation}) => {
   const [highScores, setHighScores] = useState([]);
@@ -30,7 +31,12 @@ const LeaderboardView = ({navigation}) => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <RadialGradient
+      style={styles.container}
+      colors={['white', 'gold']}
+      stops={[0.1, 1]}
+      center={[50, 100]}
+      radius={600}>
       <Text style={styles.title}>Leaderboards</Text>
       <FlatList
         data={highScores}
@@ -38,8 +44,8 @@ const LeaderboardView = ({navigation}) => {
         renderItem={({item}) => (
           <View style={styles.scoreEntry}>
             <Text style={styles.scoreName}>{item.name}</Text>
-            <Text style={styles.scoreScore}>{item.score} Points</Text>
-            <Text style={styles.scoreLevel}>Level {item.level}</Text>
+            <Text style={styles.scoreScore}>{item.score} points</Text>
+            <Text style={styles.scoreLevel}>Level {item.level} </Text>
           </View>
         )}
       />
@@ -48,7 +54,7 @@ const LeaderboardView = ({navigation}) => {
         onPress={() => navigation.navigate('MainMenuScreen')}>
         <Text style={styles.buttonText}>Main Menu</Text>
       </TouchableOpacity>
-    </View>
+    </RadialGradient>
   );
 };
 
@@ -64,35 +70,6 @@ const styles = StyleSheet.create({
     color: 'gold',
     marginBottom: 10,
   },
-  score: {
-    fontSize: 25,
-    marginBottom: 20,
-  },
-  scoreEntry: {
-    flexDirection: 'row',
-    padding: 10,
-    borderWidth: 3,
-    borderColor: 'black',
-    gap: 50,
-    backgroundColor: 'teal',
-  },
-  scoreName: {
-    color: 'black',
-    fontSize: 18,
-    fontWeight: 'bold',
-    justifyContent: 'flex-start',
-    textAlign: 'left',
-  },
-  scoreScore: {
-    color: 'black',
-    fontSize: 18,
-    justifyContent: 'center',
-  },
-  scoreLevel: {
-    color: 'black',
-    fontSize: 18,
-    justifyContent: 'flex-end',
-  },
   button: {
     fontSize: 18,
     alignItems: 'center',
@@ -104,6 +81,30 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 18,
+  },
+  scoreEntry: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 5,
+    borderWidth: 1,
+    borderColor: 'black',
+    backgroundColor: 'pink',
+  },
+  scoreName: {
+    color: 'black',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  scoreScore: {
+    color: 'black',
+    fontSize: 18,
+    textAlign: 'right',
+  },
+  scoreLevel: {
+    color: 'black',
+    fontSize: 18,
+    textAlign: 'right',
   },
 });
 

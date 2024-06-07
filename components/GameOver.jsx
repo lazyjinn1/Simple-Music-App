@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  View,
   Text,
   TouchableOpacity,
   StyleSheet,
@@ -9,6 +8,7 @@ import {
   TextInput,
 } from 'react-native';
 import uuid from 'react-native-uuid';
+import RadialGradient from 'react-native-radial-gradient';
 
 const GameOverView = ({navigation, route}) => {
   const {level, score} = route.params;
@@ -60,7 +60,12 @@ const GameOverView = ({navigation, route}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <RadialGradient
+      style={styles.container}
+      colors={['white', 'black']}
+      stops={[0, 1]}
+      center={[50, 100]}
+      radius={750}>
       <Text style={styles.title}>Game Over</Text>
       <Text style={styles.score}>Your Score: {score}</Text>
       <Text style={styles.score}>Level Reached: {level}</Text>
@@ -84,7 +89,7 @@ const GameOverView = ({navigation, route}) => {
         }}>
         <Text style={styles.textButton}>Main Menu</Text>
       </TouchableOpacity>
-    </View>
+    </RadialGradient>
   );
 };
 
@@ -121,6 +126,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginVertical: 5,
+    backgroundColor: 'white',
+    color: 'black',
   },
 });
 

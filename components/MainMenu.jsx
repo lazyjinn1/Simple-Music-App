@@ -1,9 +1,15 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {Text, TouchableOpacity, StyleSheet} from 'react-native';
+import RadialGradient from 'react-native-radial-gradient';
 
 const MainMenuView = ({navigation}) => {
   return (
-    <View style={styles.container}>
+    <RadialGradient
+      style={styles.container}
+      colors={['white', 'red']}
+      stops={[0.1, 1]}
+      center={[50, 100]}
+      radius={600}>
       <Text style={styles.title}>Welcome to Dragon Clicker</Text>
       <TouchableOpacity
         style={styles.button}
@@ -15,7 +21,7 @@ const MainMenuView = ({navigation}) => {
         onPress={() => navigation.navigate('LeaderboardScreen')}>
         <Text style={styles.buttonText}>Leaderboards</Text>
       </TouchableOpacity>
-    </View>
+    </RadialGradient>
   );
 };
 
